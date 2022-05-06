@@ -5,7 +5,6 @@ export default function Home() {
       <Head>
           <title>Inicio | share.news</title>
       </Head>
-      <h1>Hello World</h1>
     </>  
   )
 }
