@@ -1,0 +1,33 @@
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import { stripe } from "../../services/stripe";
+
+
+export default async (request: NextApiRequest, response: NextApiResponse) => {
+
+  if(request.method === "POST"){
+
+    const session =  await getSession();
+    const stripeCustomer = await stripe.customers.create({
+      email: session.user.email,
+    });
+
+    const stripeCheckoutSession = await stripe.checkout.sessions.create({
+      customer: stripeCustomer.id,
+      payment_method_types: ['card'],
+      allow_promotion_codes: true,
+      billing_address_collection: 'required',
+      line_items:[{
+        price: 'price_1KxfhSKanPmOYKpp1LjsBa3G',quantity: 1
+      }],
+      mode: "subscription",
+      success_url: process.env.STRIPE_SUCCESS_URL,
+      cancel_url: process.env.STRIPE_CANCEL_URL,
+    })
+  }
+  else{
+     response.setHeader('Allow','POST');
+     response.status(405).end('Method Not Allowed');
+  }
+}
+
