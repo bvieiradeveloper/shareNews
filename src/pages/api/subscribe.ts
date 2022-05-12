@@ -7,9 +7,10 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
 
   if(request.method === "POST"){
 
-    const session =  await getSession();
+    const session = await getSession({ req:  request})
+
     const stripeCustomer = await stripe.customers.create({
-      email: session.user.email,
+      email: session.user?.email
     });
 
     const stripeCheckoutSession = await stripe.checkout.sessions.create({
@@ -24,6 +25,8 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
       success_url: process.env.STRIPE_SUCCESS_URL,
       cancel_url: process.env.STRIPE_CANCEL_URL,
     })
+
+    return response.status(200).json({sessionId: stripeCheckoutSession.id});
   }
   else{
      response.setHeader('Allow','POST');
